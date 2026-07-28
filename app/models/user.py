@@ -9,7 +9,4 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(50), unique=True, nullable=False)
     full_name = Column(String(100), nullable=False)
-    orders = relationship(
-    "Order",
-    back_populates="user"
-    )
+    orders = relationship("Order", back_populates="user")

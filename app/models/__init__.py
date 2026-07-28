@@ -1,2 +1,3 @@
-from app.models.user import User
-from app.models.category import Category
+from .user import User
+from .category import Category
+from .product import Product

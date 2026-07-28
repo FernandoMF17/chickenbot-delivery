@@ -2,7 +2,7 @@ from fastapi import FastAPI
 
 app = FastAPI(
     title="ChickenBot Delivery API",
-    description="Backend para la gestión de pedidos de ChickenBot Delivery",
+    description="Backend para la gestion de pedidos de ChickenBot Delivery",
     version="1.0.0"
 )
 

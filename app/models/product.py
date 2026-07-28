@@ -27,3 +27,8 @@ class Product(Base):
         "Category",
         back_populates="products"
     )
+    
+    details = relationship(
+    "OrderDetail",
+    back_populates="product"
+)

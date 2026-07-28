@@ -14,3 +14,5 @@ class Order(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     user = relationship("User", back_populates="orders")
+
+    details = relationship("OrderDetail", back_populates="order")

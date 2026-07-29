@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Productos</h2>
+
+<a href="/products/new">
+    Nuevo producto
+</a>
+
+<br><br>
+
+<table border="1" cellpadding="8">
+
+    <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Precio</th>
+        <th>Stock</th>
+        <th>Categoría</th>
+        <th>Acciones</th>
+    </tr>
+
+    {% for product in products %}
+
+    <tr>
+
+        <td>{{ product.id }}</td>
+
+        <td>{{ product.name }}</td>
+
+        <td>{{ product.price }}</td>
+
+        <td>{{ product.stock }}</td>
+
+        <td>{{ product.category.name }}</td>
+
+        <td>
+
+            <a href="/products/{{ product.id }}/edit">
+                Editar
+            </a>
+
+            |
+
+            <form
+                action="/products/{{ product.id }}/delete"
+                method="POST"
+                style="display:inline;"
+            >
+
+                <button
+                    type="submit"
+                    onclick="return confirm('¿Está seguro de eliminar este producto?')"
+                >
+                    Eliminar
+                </button>
+
+            </form>
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+<br>
+
+<a href="/dashboard">
+    Volver al dashboard
+</a>
+
+{% endblock %}

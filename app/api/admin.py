@@ -294,7 +294,7 @@ async def update_product(
     db.refresh(product)
 
     return RedirectResponse(
-        "/dashboard",
+        "/products",
         status_code=302
     )
 
@@ -338,7 +338,54 @@ async def create_product(
     db.refresh(product)
 
     return RedirectResponse(
-        "/dashboard",
+        "/products",
+        status_code=302
+    )
+
+@router.get("/products")
+async def products(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+
+    if "admin" not in request.session:
+        return RedirectResponse("/login", status_code=302)
+
+    products = (
+        db.query(Product)
+        .order_by(Product.id)
+        .all()
+    )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="products.html",
+        context={
+            "request": request,
+            "products": products,
+        }
+    )
+
+@router.post("/products/{product_id}/delete")
+async def delete_product(
+    product_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+
+    if "admin" not in request.session:
+        return RedirectResponse("/login", status_code=302)
+
+    product = db.get(Product, product_id)
+
+    if product is None:
+        return RedirectResponse("/products", status_code=302)
+
+    db.delete(product)
+    db.commit()
+
+    return RedirectResponse(
+        "/products",
         status_code=302
     )
 

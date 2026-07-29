@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Panel Administrativo</h2>
+
+<p>Bienvenido {{ admin }}</p>
+
+<hr>
+
+<h3>Estadísticas</h3>
+
+<ul>
+    <li>Usuarios: 0</li>
+    <li>Productos: 0</li>
+    <li>Pedidos: 0</li>
+</ul>
+
+<hr>
+
+<h3>Accesos rápidos</h3>
+
+<ul>
+    <li>Gestionar Productos</li>
+    <li>Gestionar Categorías</li>
+    <li>Gestionar Pedidos</li>
+</ul>
+
+<hr>
+
+<a href="/logout">
+Cerrar sesión
+</a>
+
+{% endblock %}

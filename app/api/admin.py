@@ -1,40 +1,19 @@
-from fastapi import APIRouter, Form
-from fastapi.responses import HTMLResponse
-
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
+
+templates = Jinja2Templates(directory="app/templates")
 router = APIRouter()
 
 
-@router.get("/login", response_class=HTMLResponse)
-async def login():
+@router.get("/login")
+async def login(request: Request):
 
-    return """
-    <h2>Login Administrador</h2>
-
-    <form method="POST">
-
-        <input
-            name="username"
-            placeholder="Usuario"
-        >
-
-        <br><br>
-
-        <input
-            type="password"
-            name="password"
-            placeholder="Contraseña"
-        >
-
-        <br><br>
-
-        <button type="submit">
-            Ingresar
-        </button>
-
-    </form>
-    """
+    return templates.TemplateResponse(
+        request=request,
+        name="login.html",
+        context={}
+    )
 
 
 @router.post("/login")
@@ -53,19 +32,19 @@ async def login_post(
         status_code=401
     )
 
-@router.get("/dashboard", response_class=HTMLResponse)
+@router.get("/dashboard")
 async def dashboard(request: Request):
 
     if "admin" not in request.session:
         return RedirectResponse("/login", status_code=302)
 
-    return f"""
-    <h1>Panel Administrativo</h1>
-
-    <p>Bienvenido {request.session['admin']}</p>
-
-    <a href="/logout">Cerrar sesión</a>
-    """
+    return templates.TemplateResponse(
+        request=request,
+        name="dashboard.html",
+        context={
+            "admin": request.session["admin"]
+        }
+    )
 
 @router.get("/logout")
 async def logout(request: Request):

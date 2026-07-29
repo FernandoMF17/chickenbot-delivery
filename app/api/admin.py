@@ -213,8 +213,89 @@ async def new_product(
         name="product_form.html",
         context={
             "request": request,
+            "title": "Nuevo Producto",
+            "product": None,
             "categories": categories,
         }
+    )
+
+@router.get("/products/{product_id}/edit")
+async def edit_product(
+    product_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+
+    if "admin" not in request.session:
+        return RedirectResponse("/login", status_code=302)
+
+    product = db.get(Product, product_id)
+
+    if product is None:
+        return RedirectResponse("/dashboard", status_code=302)
+
+    categories = (
+        db.query(Category)
+        .order_by(Category.name)
+        .all()
+    )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="product_form.html",
+        context={
+            "request": request,
+            "title": "Editar Producto",
+            "product": product,
+            "categories": categories,
+        }
+    )
+
+@router.post("/products/{product_id}/edit")
+async def update_product(
+    product_id: int,
+    request: Request,
+    name: str = Form(...),
+    description: str = Form(""),
+    price: float = Form(...),
+    stock: int = Form(...),
+    category_id: int = Form(...),
+    db: Session = Depends(get_db)
+):
+
+    if "admin" not in request.session:
+        return RedirectResponse("/login", status_code=302)
+
+    product = db.get(Product, product_id)
+
+    if product is None:
+        return RedirectResponse("/dashboard", status_code=302)
+
+    # Validaciones
+    if price < 0:
+        return HTMLResponse(
+            "<h2>El precio no puede ser negativo</h2>",
+            status_code=400
+        )
+
+    if stock < 0:
+        return HTMLResponse(
+            "<h2>El stock no puede ser negativo</h2>",
+            status_code=400
+        )
+
+    product.name = name
+    product.description = description
+    product.price = price
+    product.stock = stock
+    product.category_id = category_id
+
+    db.commit()
+    db.refresh(product)
+
+    return RedirectResponse(
+        "/dashboard",
+        status_code=302
     )
 
 @router.post("/products/new")

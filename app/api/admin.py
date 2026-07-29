@@ -471,6 +471,9 @@ def deliveries(
     db: Session = Depends(get_db)
 ):
 
+    if "admin" not in request.session:
+        return RedirectResponse("/login", status_code=302)
+
     deliveries = (
         db.query(Delivery)
         .order_by(Delivery.id)
@@ -490,6 +493,9 @@ def deliveries(
 def new_delivery(
     request: Request
 ):
+    if "admin" not in request.session:
+        return RedirectResponse("/login", status_code=302)
+
     return templates.TemplateResponse(
         request=request,
         name="delivery_form.html",
@@ -502,12 +508,16 @@ def new_delivery(
 
 @router.post("/deliveries/new")
 def create_delivery(
+    request: Request,
     full_name: str = Form(...),
     telegram_username: str = Form(...),
     access_code: str = Form(...),
     is_active: bool = Form(False),
     db: Session = Depends(get_db)
 ):
+
+    if "admin" not in request.session:
+        return RedirectResponse("/login", status_code=302)
 
     delivery = Delivery(
         full_name=full_name,
@@ -531,6 +541,9 @@ def edit_delivery(
     db: Session = Depends(get_db)
 ):
 
+    if "admin" not in request.session:
+        return RedirectResponse("/login", status_code=302)
+
     delivery = db.get(Delivery, delivery_id)
 
     if delivery is None:
@@ -548,6 +561,7 @@ def edit_delivery(
 
 @router.post("/deliveries/{delivery_id}/edit")
 def update_delivery(
+    request: Request,
     delivery_id: int,
     full_name: str = Form(...),
     telegram_username: str = Form(...),
@@ -555,6 +569,9 @@ def update_delivery(
     is_active: bool = Form(False),
     db: Session = Depends(get_db)
 ):
+
+    if "admin" not in request.session:
+        return RedirectResponse("/login", status_code=302)
 
     delivery = db.get(Delivery, delivery_id)
 
@@ -577,8 +594,12 @@ def update_delivery(
 @router.post("/deliveries/{delivery_id}/toggle")
 def toggle_delivery(
     delivery_id: int,
+    request: Request,
     db: Session = Depends(get_db)
 ):
+
+    if "admin" not in request.session:
+        return RedirectResponse("/login", status_code=302)
 
     delivery = db.get(Delivery, delivery_id)
 

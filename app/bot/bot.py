@@ -6,8 +6,11 @@ from telegram.ext import (
 )
 
 from app.core.config import settings
-from app.bot.handlers import start, menu
-from telegram.ext import MessageHandler, filters
+from app.bot.handlers import (
+    start,
+    menu,
+    delivery_login,
+)
 
 def create_bot():
 
@@ -21,6 +24,13 @@ def create_bot():
         CommandHandler(
             "start",
             start
+        )
+    )
+
+    application.add_handler(
+        CommandHandler(
+            "delivery",
+            delivery_login
         )
     )
 

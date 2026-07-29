@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+</head>
+<body>
+
+<h1>{{ title }}</h1>
+
+<form method="post">
+
+    <label>Nombre</label><br>
+    <input
+        type="text"
+        name="full_name"
+        value="{{ delivery.full_name if delivery else '' }}"
+        required
+    >
+
+    <br><br>
+
+    <label>Usuario de Telegram</label><br>
+    <input
+        type="text"
+        name="telegram_username"
+        value="{{ delivery.telegram_username if delivery else '' }}"
+        required
+    >
+
+    <br><br>
+
+    <label>Código</label><br>
+    <input
+        type="text"
+        name="access_code"
+        value="{{ delivery.access_code if delivery else '' }}"
+        required
+    >
+
+    <br><br>
+
+    <label>
+        <input
+            type="checkbox"
+            name="is_active"
+            {% if delivery and delivery.is_active %}checked{% endif %}
+        >
+        Activo
+    </label>
+
+    <br><br>
+
+    <button type="submit">
+        Guardar
+    </button>
+
+</form>
+
+<br>
+
+<a href="/deliveries">
+    Volver
+</a>
+
+</body>
+</html>

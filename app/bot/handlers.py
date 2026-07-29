@@ -209,6 +209,53 @@ def get_delivery(access_code: str):
     finally:
         db.close()
 
+def update_order_location(
+    order_id: int,
+    latitude: float,
+    longitude: float
+):
+
+    db = SessionLocal()
+
+    try:
+
+        order = db.get(Order, order_id)
+
+        if order is None:
+            return False
+
+        order.delivery_latitude = latitude
+        order.delivery_longitude = longitude
+
+        db.commit()
+
+        return True
+
+    finally:
+        db.close()
+
+def get_pending_orders():
+
+    db = SessionLocal()
+
+    try:
+
+        orders = (
+            db.query(Order)
+            .options(
+                joinedload(Order.user),
+                joinedload(Order.details).joinedload(OrderDetail.product)
+            )
+            .filter(Order.status == "Pendiente")
+            .order_by(Order.created_at.asc())
+            .all()
+        )
+
+        return orders
+
+    finally:
+        db.close()
+
 async def delivery_login(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
@@ -240,6 +287,78 @@ async def delivery_login(
         f"✅ Bienvenido {delivery.full_name}.\n\n"
         "Autenticación correcta."
     )
+
+async def pending_orders(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
+
+    # Verificar autenticación
+    if "delivery_id" not in context.user_data:
+
+        await update.message.reply_text(
+            "❌ Debes autenticarte primero.\n\n"
+            "Usa:\n"
+            "/delivery TU_CODIGO"
+        )
+
+        return
+
+    # 👇 PASO 3 VA AQUÍ
+    orders = get_pending_orders()
+
+    if len(orders) == 0:
+
+        await update.message.reply_text(
+            "📦 No existen pedidos pendientes."
+        )
+
+        return
+
+    # PASO 4
+    message = "🚚 Pedidos pendientes\n\n"
+
+    for order in orders:
+
+        message += (
+            f"🧾 Pedido #{order.id}\n"
+            f"👤 Cliente: {order.user.full_name}\n"
+            f"📌 Estado: {order.status}\n"
+        )
+
+        if (
+            order.delivery_latitude is not None
+            and
+            order.delivery_longitude is not None
+        ):
+
+            maps = (
+                "https://www.google.com/maps?q="
+                f"{order.delivery_latitude},"
+                f"{order.delivery_longitude}"
+            )
+
+            message += (
+                f"📍 Ubicación:\n{maps}\n"
+            )
+
+        else:
+
+            message += (
+                "📍 Ubicación no registrada.\n"
+            )
+
+        message += "\n🍗 Productos:\n"
+
+        for detail in order.details:
+
+            message += (
+                f"• {detail.product.name} x{detail.quantity}\n"
+            )
+
+        message += "\n"
+
+    await update.message.reply_text(message)
 
 async def menu(
     update: Update,
@@ -474,13 +593,13 @@ async def menu(
                 db.commit()
 
                 context.user_data["cart"] = {}
+                context.user_data["pending_order_id"] = order.id
+                context.user_data["waiting_location"] = True
 
                 await update.message.reply_text(
-                    f"🎉 Pedido confirmado.\n\n"
-                    f"Número de pedido: #{order.id}\n"
-                    f"Estado: {order.status}",
-                    reply_markup=main_keyboard()
-                )
+                    f"🎉 Pedido #{order.id} registrado correctamente.\n\n"
+                    "📍 Ahora comparte tu ubicación para la entrega."
+)
 
             except Exception:
 
@@ -530,3 +649,36 @@ async def menu(
             await update.message.reply_text(
                 "Selecciona una opción del menú."
             )
+
+async def receive_location(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
+
+    if not context.user_data.get("waiting_location"):
+        return
+
+    location = update.message.location
+
+    order_id = context.user_data.get("pending_order_id")
+
+    success = update_order_location(
+        order_id,
+        location.latitude,
+        location.longitude
+    )
+
+    if not success:
+
+        await update.message.reply_text(
+            "❌ No se pudo registrar la ubicación."
+        )
+
+        return
+
+    context.user_data.pop("waiting_location", None)
+    context.user_data.pop("pending_order_id", None)
+
+    await update.message.reply_text(
+        "✅ Ubicación registrada correctamente."
+    )

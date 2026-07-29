@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float
 
 from app.db.base import Base
 
@@ -16,6 +16,9 @@ class Order(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    delivery_latitude = Column(Float, nullable=True)
+    delivery_longitude = Column(Float, nullable=True)
 
     user = relationship("User", back_populates="orders")
 

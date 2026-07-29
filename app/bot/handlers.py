@@ -7,6 +7,8 @@ from telegram import ReplyKeyboardMarkup
 from app.db.session import SessionLocal
 from app.models.category import Category
 
+from app.models.product import Product
+
 from app.bot.keyboards import main_keyboard
 
 
@@ -61,6 +63,32 @@ def categories_keyboard():
         resize_keyboard=True
     )
 
+def get_products_by_category(category_name: str):
+
+    db = SessionLocal()
+
+    try:
+
+        category = (
+            db.query(Category)
+            .filter(Category.name == category_name)
+            .first()
+        )
+
+        if category is None:
+            return None
+
+        products = (
+            db.query(Product)
+            .filter(Product.category_id == category.id)
+            .order_by(Product.name)
+            .all()
+        )
+
+        return products
+
+    finally:
+        db.close()
 
 async def menu(
     update: Update,
@@ -94,19 +122,34 @@ async def menu(
         await update.message.reply_text(
             "Todavía no tienes pedidos."
         )
-    elif text in [
-        "Combos",
-        "Bebidas",
-        "Postres"
-    ]:
-
-        await update.message.reply_text(
-            f"Mostrando productos de {text}..."
-        )
 
     else:
 
-        await update.message.reply_text(
-            "Selecciona una opción del menú."
-        )
+        products = get_products_by_category(text)
 
+        if products is not None:
+
+            if len(products) == 0:
+
+                await update.message.reply_text(
+                    "Esta categoría no tiene productos."
+                )
+
+            else:
+
+                message = f"🍗 {text}\n\n"
+
+                for product in products:
+
+                    message += (
+                        f"• {product.name}\n"
+                        f"💲 Precio: Bs. {product.price}\n\n"
+                    )
+
+                await update.message.reply_text(message)
+
+        else:
+
+            await update.message.reply_text(
+                "Selecciona una opción del menú."
+            )

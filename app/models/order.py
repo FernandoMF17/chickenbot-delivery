@@ -1,5 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 
 from app.db.base import Base
 
@@ -11,8 +13,11 @@ class Order(Base):
 
     status = Column(String(30), nullable=False)
 
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     user = relationship("User", back_populates="orders")
 
     details = relationship("OrderDetail", back_populates="order")
+

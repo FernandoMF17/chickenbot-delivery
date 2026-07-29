@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Categorías</h2>
+
+<a href="/categories/new">
+    Nueva categoría
+</a>
+
+<br><br>
+
+<table border="1" cellpadding="8">
+
+    <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Acciones</th>
+    </tr>
+
+    {% for category in categories %}
+
+    <tr>
+
+        <td>{{ category.id }}</td>
+
+        <td>{{ category.name }}</td>
+
+        <td>
+
+            <a href="/categories/{{category.id}}/edit">
+                Editar
+            </a>
+
+            |
+
+            <form
+                action="/categories/{{ category.id }}/delete"
+                method="POST"
+                style="display:inline;"
+            >
+
+                <button
+                    type="submit"
+                    onclick="return confirm('¿Está seguro de eliminar esta categoría?')"
+                >
+                    Eliminar
+                </button>
+
+            </form>
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+<br>
+
+<a href="/dashboard">
+    Volver al dashboard
+</a>
+
+{% endblock %}

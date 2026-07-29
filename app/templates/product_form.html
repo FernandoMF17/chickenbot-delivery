@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Nuevo Producto</h2>
+
+<form method="POST">
+
+    <label>Nombre</label><br>
+    <input
+        type="text"
+        name="name"
+        required
+    >
+
+    <br><br>
+
+    <label>Descripción</label><br>
+
+    <textarea
+        name="description"
+        rows="4"
+        cols="40"
+    ></textarea>
+
+    <br><br>
+
+    <label>Precio</label><br>
+
+    <input
+        type="number"
+        step="0.01"
+        name="price"
+        required
+    >
+
+    <br><br>
+
+    <label>Stock</label><br>
+
+    <input
+        type="number"
+        name="stock"
+        required
+    >
+
+    <br><br>
+
+    <label>Categoría</label><br>
+
+    <select
+        name="category_id"
+        required
+    >
+
+        {% for category in categories %}
+
+            <option value="{{ category.id }}">
+                {{ category.name }}
+            </option>
+
+        {% endfor %}
+
+    </select>
+
+    <br><br>
+
+    <button type="submit">
+        Guardar
+    </button>
+
+</form>
+
+<br>
+
+<a href="/dashboard">
+    Volver
+</a>
+
+{% endblock %}

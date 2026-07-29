@@ -7,7 +7,7 @@ from fastapi import Depends
 from app.db.session import get_db
 from app.models.category import Category
 
-
+from app.models.product import Product
 
 from fastapi.templating import Jinja2Templates
 
@@ -190,6 +190,74 @@ async def delete_category(
 
     return RedirectResponse(
         "/categories",
+        status_code=302
+    )
+
+@router.get("/products/new")
+async def new_product(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+
+    if "admin" not in request.session:
+        return RedirectResponse("/login", status_code=302)
+
+    categories = (
+        db.query(Category)
+        .order_by(Category.name)
+        .all()
+    )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="product_form.html",
+        context={
+            "request": request,
+            "categories": categories,
+        }
+    )
+
+@router.post("/products/new")
+async def create_product(
+    request: Request,
+    name: str = Form(...),
+    description: str = Form(""),
+    price: float = Form(...),
+    stock: int = Form(...),
+    category_id: int = Form(...),
+    db: Session = Depends(get_db)
+):
+
+    if "admin" not in request.session:
+        return RedirectResponse("/login", status_code=302)
+
+    # Validaciones básicas
+    if price < 0:
+        return HTMLResponse(
+            "<h2>El precio no puede ser negativo</h2>",
+            status_code=400
+        )
+
+    if stock < 0:
+        return HTMLResponse(
+            "<h2>El stock no puede ser negativo</h2>",
+            status_code=400
+        )
+
+    product = Product(
+        name=name,
+        description=description,
+        price=price,
+        stock=stock,
+        category_id=category_id
+    )
+
+    db.add(product)
+    db.commit()
+    db.refresh(product)
+
+    return RedirectResponse(
+        "/dashboard",
         status_code=302
     )
 

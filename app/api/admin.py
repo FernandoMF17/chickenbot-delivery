@@ -10,6 +10,8 @@ from app.models.category import Category
 from app.models.product import Product
 from app.models.order import Order
 
+from app.models.delivery import Delivery
+
 from fastapi.templating import Jinja2Templates
 
 templates = Jinja2Templates(directory="app/templates")
@@ -460,6 +462,134 @@ async def update_order(
 
     return RedirectResponse(
         "/orders",
+        status_code=302
+    )
+
+@router.get("/deliveries")
+def deliveries(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+
+    deliveries = (
+        db.query(Delivery)
+        .order_by(Delivery.id)
+        .all()
+    )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="deliveries.html",
+        context={
+            "request": request,
+            "deliveries": deliveries,
+        }
+    )
+
+@router.get("/deliveries/new")
+def new_delivery(
+    request: Request
+):
+    return templates.TemplateResponse(
+        request=request,
+        name="delivery_form.html",
+        context={
+            "request": request,
+            "title": "Nuevo repartidor",
+            "delivery": None,
+        }
+    )
+
+@router.post("/deliveries/new")
+def create_delivery(
+    full_name: str = Form(...),
+    telegram_username: str = Form(...),
+    access_code: str = Form(...),
+    is_active: bool = Form(False),
+    db: Session = Depends(get_db)
+):
+
+    delivery = Delivery(
+        full_name=full_name,
+        telegram_username=telegram_username,
+        access_code=access_code,
+        is_active=is_active
+    )
+
+    db.add(delivery)
+    db.commit()
+
+    return RedirectResponse(
+        "/deliveries",
+        status_code=302
+    )
+
+@router.get("/deliveries/{delivery_id}/edit")
+def edit_delivery(
+    delivery_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+
+    delivery = db.get(Delivery, delivery_id)
+
+    if delivery is None:
+        return RedirectResponse("/deliveries", status_code=302)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="delivery_form.html",
+        context={
+            "request": request,
+            "title": "Editar repartidor",
+            "delivery": delivery,
+        }
+    )
+
+@router.post("/deliveries/{delivery_id}/edit")
+def update_delivery(
+    delivery_id: int,
+    full_name: str = Form(...),
+    telegram_username: str = Form(...),
+    access_code: str = Form(...),
+    is_active: bool = Form(False),
+    db: Session = Depends(get_db)
+):
+
+    delivery = db.get(Delivery, delivery_id)
+
+    if delivery is None:
+        return RedirectResponse("/deliveries", status_code=302)
+
+    delivery.full_name = full_name
+    delivery.telegram_username = telegram_username
+    delivery.access_code = access_code
+    delivery.is_active = is_active
+
+    db.commit()
+    db.refresh(delivery)
+
+    return RedirectResponse(
+        "/deliveries",
+        status_code=302
+    )
+
+@router.post("/deliveries/{delivery_id}/toggle")
+def toggle_delivery(
+    delivery_id: int,
+    db: Session = Depends(get_db)
+):
+
+    delivery = db.get(Delivery, delivery_id)
+
+    if delivery is not None:
+
+        delivery.is_active = not delivery.is_active
+
+        db.commit()
+
+    return RedirectResponse(
+        "/deliveries",
         status_code=302
     )
 

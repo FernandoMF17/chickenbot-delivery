@@ -7,7 +7,7 @@ from telegram import ReplyKeyboardMarkup
 
 from app.db.session import SessionLocal
 from app.models.category import Category
-
+from app.models.delivery import Delivery
 from app.models.product import Product
 from app.bot.keyboards import cart_keyboard
 from app.models.user import User
@@ -189,13 +189,64 @@ def get_user_orders(update):
     finally:
         db.close()
 
+def get_delivery(access_code: str):
+
+    db = SessionLocal()
+
+    try:
+
+        delivery = (
+            db.query(Delivery)
+            .filter(
+                Delivery.access_code == access_code,
+                Delivery.is_active == True
+            )
+            .first()
+        )
+
+        return delivery
+
+    finally:
+        db.close()
+
+async def delivery_login(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
+
+    if len(context.args) != 1:
+
+        await update.message.reply_text(
+            "Uso:\n/delivery TU_CODIGO"
+        )
+
+        return
+
+    access_code = context.args[0]
+
+    delivery = get_delivery(access_code)
+
+    if delivery is None:
+
+        await update.message.reply_text(
+            "❌ Código incorrecto."
+        )
+
+        return
+
+    context.user_data["delivery_id"] = delivery.id
+
+    await update.message.reply_text(
+        f"✅ Bienvenido {delivery.full_name}.\n\n"
+        "Autenticación correcta."
+    )
+
 async def menu(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
 ):
 
     text = update.message.text
-    print(repr(text))
     if text == "🍗 Ver categorías":
 
         await update.message.reply_text(

@@ -1,0 +1,51 @@
+<h1>Repartidores</h1>
+
+<a href="/deliveries/new">Nuevo repartidor</a>
+
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Usuario Telegram</th>
+        <th>Código</th>
+        <th>Activo</th>
+        <th>Acciones</th>
+    </tr>
+
+    {% for delivery in deliveries %}
+    <tr>
+        <td>{{ delivery.id }}</td>
+        <td>{{ delivery.full_name }}</td>
+        <td>{{ delivery.telegram_username }}</td>
+        <td>{{ delivery.access_code }}</td>
+        <td>{{ delivery.is_active }}</td>
+        <td>
+
+            <a href="/deliveries/{{ delivery.id }}/edit">
+                Editar
+            </a>
+
+            <form
+                action="/deliveries/{{ delivery.id }}/toggle"
+                method="post"
+                style="display:inline;"
+            >
+                <button type="submit">
+
+                    {% if delivery.is_active %}
+                        Desactivar
+                    {% else %}
+                        Activar
+                    {% endif %}
+
+                </button>
+            </form>
+
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+
+<a href="/dashboard">Volver al dashboard</a>

@@ -45,3 +45,16 @@ def products_keyboard(category_id: int):
         keyboard,
         resize_keyboard=True
     )
+
+def cart_keyboard():
+
+    keyboard = [
+        ["✅ Confirmar pedido"],
+        ["🗑 Vaciar carrito"],
+        ["⬅️ Categorías"]
+    ]
+
+    return ReplyKeyboardMarkup(
+        keyboard,
+        resize_keyboard=True
+    )

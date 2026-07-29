@@ -35,7 +35,7 @@ Las pruebas funcionales abarcan:
 | ORM | SQLAlchemy |
 | Migraciones | Alembic |
 | Bot | python-telegram-bot |
-| Navegador | Google Chrome |
+| Navegador | Brave |
 | Cliente móvil | Telegram Android |
 
 ---
@@ -60,18 +60,16 @@ Las pruebas funcionales abarcan:
 | PF-14 | Cliente | Agregar productos al carrito | Productos agregados correctamente | ✅ Correcto |
 | PF-15 | Cliente | Modificar cantidades | Cantidades actualizadas | ✅ Correcto |
 | PF-16 | Cliente | Enviar ubicación | Ubicación registrada | ✅ Correcto |
-| PF-17 | Administrador | Confirmar pago | Pedido actualizado | ✅ Correcto |
-| PF-18 | Administrador | Asignar repartidor | Pedido asignado correctamente | ✅ Correcto |
-| PF-19 | Repartidor | Inicio de sesión | Acceso autorizado | ✅ Correcto |
-| PF-20 | Repartidor | Consultar pedidos pendientes | Lista obtenida correctamente | ✅ Correcto |
-| PF-21 | Repartidor | Iniciar entrega | Estado "En camino" | ✅ Correcto |
-| PF-22 | Repartidor | Confirmar entrega | Solicitud de evidencia fotográfica | ✅ Correcto |
-| PF-23 | Repartidor | Enviar fotografía de entrega | Evidencia almacenada | ✅ Correcto |
-| PF-24 | Base de datos | Registrar pedido | Información persistida | ✅ Correcto |
-| PF-25 | Base de datos | Registrar ubicación | Coordenadas almacenadas | ✅ Correcto |
-| PF-26 | Base de datos | Registrar comprobante | Imagen almacenada | ✅ Correcto |
-| PF-27 | Base de datos | Registrar fotografía de entrega | Imagen almacenada | ✅ Correcto |
-| PF-28 | Integración | Flujo completo del sistema | Pedido finalizado correctamente | ✅ Correcto |
+| PF-17 | Repartidor | Inicio de sesión | Acceso autorizado | ✅ Correcto |
+| PF-18 | Repartidor | Consultar pedidos pendientes | Lista obtenida correctamente | ✅ Correcto |
+| PF-19 | Repartidor | Iniciar entrega | Estado "En camino" | ✅ Correcto |
+| PF-20 | Repartidor | Confirmar entrega | Solicitud de evidencia fotográfica | ✅ Correcto |
+| PF-21 | Repartidor | Enviar fotografía de entrega | Evidencia almacenada | ✅ Correcto |
+| PF-22 | Base de datos | Registrar pedido | Información persistida | ✅ Correcto |
+| PF-23 | Base de datos | Registrar ubicación | Coordenadas almacenadas | ✅ Correcto |
+| PF-24 | Base de datos | Registrar comprobante | Imagen almacenada | ✅ Correcto |
+| PF-25 | Base de datos | Registrar fotografía de entrega | Imagen almacenada | ✅ Correcto |
+| PF-26 | Integración | Flujo completo del sistema | Pedido finalizado correctamente | ✅ Correcto |
 
 ---
 
@@ -84,14 +82,13 @@ Durante las pruebas se verificó el siguiente flujo completo:
 3. El cliente selecciona uno o más productos.
 4. Se genera el carrito de compras.
 5. El cliente envía la ubicación de entrega.
-6. El administrador asigna el pedido a un repartidor.
-7.  El repartidor consulta los pedidos pendientes.
-8.  El repartidor inicia la entrega.
-9.  El sistema actualiza el estado del pedido.
-10. El repartidor confirma la entrega.
-11. El sistema solicita una fotografía como evidencia.
-12. La fotografía queda almacenada en la base de datos.
-13. El pedido cambia al estado **Entregado**.
+6.  El repartidor consulta los pedidos pendientes.
+7.  El repartidor inicia la entrega.
+8.  El sistema actualiza el estado del pedido.
+9.  El repartidor confirma la entrega.
+10. El sistema solicita una fotografía como evidencia.
+11. La fotografía queda almacenada en la base de datos.
+12. El pedido cambia al estado **Entregado**.
 
 ---
 

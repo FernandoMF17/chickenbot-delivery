@@ -126,13 +126,18 @@ requirements.txt
 Iniciar el servidor:
 
 ```bash
-uvicorn app.main:app --reload
+uvicorn main:app --reload
+```
+En otra consola iniciar el bot:
+
+```bash
+python run_bot.py
 ```
 
 La aplicación estará disponible en:
 
 ```
-http://localhost:8000
+http://localhost:8000/login
 ```
 
 ---

@@ -30,3 +30,4 @@ class Order(Base):
         onupdate=datetime.utcnow,
         nullable=True
     )
+    delivery_photo = Column(String(255), nullable=True)

@@ -78,16 +78,29 @@ def categories_keyboard():
         resize_keyboard=True
     )
 
-def pending_order_keyboard(order_id: int):
+def order_keyboard(order):
 
-    keyboard = [
-        [
+    if order.status == "Pendiente":
+
+        keyboard = [[
             InlineKeyboardButton(
                 "🚚 Iniciar entrega",
-                callback_data=f"start_delivery:{order_id}"
+                callback_data=f"start_delivery:{order.id}"
             )
-        ]
-    ]
+        ]]
+
+    elif order.status == "En camino":
+
+        keyboard = [[
+            InlineKeyboardButton(
+                "✅ Confirmar entrega",
+                callback_data=f"finish_delivery:{order.id}"
+            )
+        ]]
+
+    else:
+
+        keyboard = []
 
     return InlineKeyboardMarkup(keyboard)
 
@@ -278,6 +291,32 @@ def update_order_status(
     finally:
         db.close()
 
+def finish_order(
+    order_id: int,
+    photo_file_id: str
+):
+
+    db = SessionLocal()
+
+    try:
+
+        order = db.get(Order, order_id)
+
+        if order is None:
+            return False
+
+        order.delivery_photo = photo_file_id
+        order.status = "Entregado"
+        order.updated_at = datetime.utcnow()
+
+        db.commit()
+
+        return True
+
+    finally:
+
+        db.close()
+
 def get_pending_orders():
 
     db = SessionLocal()
@@ -290,7 +329,12 @@ def get_pending_orders():
                 joinedload(Order.user),
                 joinedload(Order.details).joinedload(OrderDetail.product)
             )
-            .filter(Order.status == "Pendiente")
+            .filter(
+                Order.status.in_([
+                    "Pendiente",
+                    "En camino"
+                ])
+            )
             .order_by(Order.created_at.asc())
             .all()
         )
@@ -398,7 +442,7 @@ async def pending_orders(
 
         await update.message.reply_text(
             message,
-            reply_markup=pending_order_keyboard(order.id)
+            reply_markup=order_keyboard(order)
         )
 
 async def start_delivery(
@@ -430,6 +474,24 @@ async def start_delivery(
     await query.edit_message_text(
         f"🚚 Pedido #{order_id}\n\n"
         "Estado actualizado a: En camino."
+    )
+
+async def finish_delivery(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
+
+    query = update.callback_query
+
+    await query.answer()
+
+    order_id = int(query.data.split(":")[1])
+
+    context.user_data["waiting_delivery_photo"] = True
+    context.user_data["delivery_order_id"] = order_id
+
+    await query.edit_message_text(
+        "📷 Envía una fotografía como comprobante de la entrega."
     )
 
 async def menu(
@@ -753,4 +815,38 @@ async def receive_location(
 
     await update.message.reply_text(
         "✅ Ubicación registrada correctamente."
+    )
+
+async def receive_delivery_photo(
+
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
+
+    if not context.user_data.get("waiting_delivery_photo"):
+        return
+
+    order_id = context.user_data.get("delivery_order_id")
+
+    photo = update.message.photo[-1]
+
+    success = finish_order(
+        order_id,
+        photo.file_id
+    )
+
+    if not success:
+
+        await update.message.reply_text(
+            "❌ No se pudo registrar la entrega."
+        )
+
+        return
+
+    context.user_data.pop("waiting_delivery_photo", None)
+    context.user_data.pop("delivery_order_id", None)
+
+    await update.message.reply_text(
+        "✅ Entrega confirmada correctamente.\n\n"
+        "📷 La fotografía fue registrada."
     )

@@ -3,7 +3,6 @@ from telegram.ext import (
     CommandHandler,
     MessageHandler,
     CallbackQueryHandler,
-
     filters,
 )
 
@@ -16,6 +15,8 @@ from app.bot.handlers import (
     receive_location,
     pending_orders,
     start_delivery,
+    finish_delivery,
+    receive_delivery_photo,
 )
 
 
@@ -62,9 +63,24 @@ def create_bot():
     )
     
     application.add_handler(
+    CallbackQueryHandler(
+        start_delivery,
+        pattern="^start_delivery:"
+    )
+)
+
+    application.add_handler(
         CallbackQueryHandler(
-            start_delivery
+            finish_delivery,
+            pattern="^finish_delivery:"
         )
     )
+
+    application.add_handler(
+        MessageHandler(
+            filters.PHOTO,
+            receive_delivery_photo
+        )
+    )   
 
     return application

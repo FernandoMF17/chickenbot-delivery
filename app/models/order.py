@@ -24,3 +24,9 @@ class Order(Base):
 
     details = relationship("OrderDetail", back_populates="order")
 
+    updated_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=True
+    )

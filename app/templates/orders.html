@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Pedidos</h2>
+
+<table border="1" cellpadding="8">
+
+    <tr>
+        <th>ID</th>
+        <th>Cliente</th>
+        <th>Estado</th>
+        <th>Acción</th>
+    </tr>
+
+    {% for order in orders %}
+
+    <tr>
+
+        <td>{{ order.id }}</td>
+
+        <td>{{ order.user.full_name }}</td>
+
+        <td>{{ order.status }}</td>
+
+        <td>
+
+            <a href="/orders/{{ order.id }}/edit">
+                Cambiar estado
+            </a>
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+<br>
+
+<a href="/dashboard">
+    Volver al dashboard
+</a>
+
+{% endblock %}

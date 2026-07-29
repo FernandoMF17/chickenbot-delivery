@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Actualizar Estado del Pedido</h2>
+
+<form method="POST">
+
+    <label>Estado</label>
+
+    <br><br>
+
+    <select name="status" required>
+
+        <option value="Pendiente"
+            {% if order.status == "Pendiente" %}selected{% endif %}>
+            Pendiente
+        </option>
+
+        <option value="Preparando"
+            {% if order.status == "Preparando" %}selected{% endif %}>
+            Preparando
+        </option>
+
+        <option value="En camino"
+            {% if order.status == "En camino" %}selected{% endif %}>
+            En camino
+        </option>
+
+        <option value="Entregado"
+            {% if order.status == "Entregado" %}selected{% endif %}>
+            Entregado
+        </option>
+
+        <option value="Cancelado"
+            {% if order.status == "Cancelado" %}selected{% endif %}>
+            Cancelado
+        </option>
+
+    </select>
+
+    <br><br>
+
+    <button type="submit">
+        Guardar
+    </button>
+
+</form>
+
+<br>
+
+<a href="/orders">
+    Volver
+</a>
+
+{% endblock %}

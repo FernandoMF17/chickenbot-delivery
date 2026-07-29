@@ -8,6 +8,7 @@ from app.db.session import get_db
 from app.models.category import Category
 
 from app.models.product import Product
+from app.models.order import Order
 
 from fastapi.templating import Jinja2Templates
 
@@ -386,6 +387,79 @@ async def delete_product(
 
     return RedirectResponse(
         "/products",
+        status_code=302
+    )
+
+@router.get("/orders")
+async def orders(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+
+    if "admin" not in request.session:
+        return RedirectResponse("/login", status_code=302)
+
+    orders = (
+        db.query(Order)
+        .order_by(Order.id)
+        .all()
+    )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="orders.html",
+        context={
+            "request": request,
+            "orders": orders,
+        }
+    )
+@router.get("/orders/{order_id}/edit")
+async def edit_order(
+    order_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+
+    if "admin" not in request.session:
+        return RedirectResponse("/login", status_code=302)
+
+    order = db.get(Order, order_id)
+
+    if order is None:
+        return RedirectResponse("/orders", status_code=302)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="order_form.html",
+        context={
+            "request": request,
+            "order": order,
+        }
+    )
+
+@router.post("/orders/{order_id}/edit")
+async def update_order(
+    order_id: int,
+    request: Request,
+    status: str = Form(...),
+    db: Session = Depends(get_db)
+):
+
+    if "admin" not in request.session:
+        return RedirectResponse("/login", status_code=302)
+
+    order = db.get(Order, order_id)
+
+    if order is None:
+        return RedirectResponse("/orders", status_code=302)
+
+    order.status = status
+
+    db.commit()
+    db.refresh(order)
+
+    return RedirectResponse(
+        "/orders",
         status_code=302
     )
 

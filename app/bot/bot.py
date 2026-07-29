@@ -6,11 +6,15 @@ from telegram.ext import (
 )
 
 from app.core.config import settings
+
 from app.bot.handlers import (
     start,
     menu,
     delivery_login,
+    receive_location,
+    pending_orders,
 )
+
 
 def create_bot():
 
@@ -36,9 +40,22 @@ def create_bot():
 
     application.add_handler(
         MessageHandler(
+            filters.LOCATION,
+            receive_location
+        )
+    )
+
+    application.add_handler(
+        MessageHandler(
             filters.TEXT & ~filters.COMMAND,
             menu
         )
     )
+    application.add_handler(
+    CommandHandler(
+        "pending",
+        pending_orders
+    )
+)
 
     return application

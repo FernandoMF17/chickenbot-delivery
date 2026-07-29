@@ -9,7 +9,11 @@ from app.models.category import Category
 
 from app.models.product import Product
 
-from app.bot.keyboards import main_keyboard
+from app.bot.keyboards import (
+    main_keyboard,
+    products_keyboard,
+)
+
 
 
 async def start(
@@ -85,7 +89,24 @@ def get_products_by_category(category_name: str):
             .all()
         )
 
-        return products
+        return category, products
+
+    finally:
+        db.close()
+
+def get_product_by_name(product_name: str):
+
+    db = SessionLocal()
+
+    try:
+
+        product = (
+            db.query(Product)
+            .filter(Product.name == product_name)
+            .first()
+        )
+
+        return product
 
     finally:
         db.close()
@@ -104,6 +125,13 @@ async def menu(
             reply_markup=categories_keyboard()
         )
 
+    elif text == "⬅️ Categorías":
+
+        await update.message.reply_text(
+            "Selecciona una categoría:",
+            reply_markup=categories_keyboard()
+        )
+
     elif text == "⬅️ Menú principal":
 
         await update.message.reply_text(
@@ -113,9 +141,35 @@ async def menu(
 
     elif text == "🛒 Mi carrito":
 
-        await update.message.reply_text(
-            "Tu carrito está vacío."
-        )
+        cart = context.user_data.get("cart", {})
+
+        if not cart:
+
+            await update.message.reply_text(
+                "🛒 Tu carrito está vacío."
+            )
+
+        else:
+
+            message = "🛒 Tu carrito\n\n"
+
+            total = 0
+
+            for item in cart.values():
+
+                subtotal = item["price"] * item["quantity"]
+
+                total += subtotal
+
+                message += (
+                    f"• {item['name']}\n"
+                    f"Cantidad: {item['quantity']}\n"
+                    f"Subtotal: Bs. {subtotal}\n\n"
+                )
+
+            message += f"💰 Total: Bs. {total}"
+
+            await update.message.reply_text(message)
 
     elif text == "📦 Mis pedidos":
 
@@ -123,11 +177,57 @@ async def menu(
             "Todavía no tienes pedidos."
         )
 
+    elif text == "🗑 Vaciar carrito":
+
+        context.user_data["cart"] = {}
+
+        await update.message.reply_text(
+            "🗑 Carrito vaciado correctamente."
+        )
+
+
+    elif text.startswith("➕ "):
+
+        product_name = text.replace("➕ ", "")
+
+        product = get_product_by_name(product_name)
+
+        if product is None:
+
+            await update.message.reply_text(
+                "Producto no encontrado."
+            )
+
+        else:
+
+            cart = context.user_data.setdefault("cart", {})
+
+            if product.id in cart:
+
+                cart[product.id]["quantity"] += 1
+
+            else:
+
+                cart[product.id] = {
+                    "name": product.name,
+                    "price": product.price,
+                    "quantity": 1
+                }
+
+            await update.message.reply_text(
+                f"✅ {product.name} agregado al carrito."
+            )
+
+
+
+
     else:
 
-        products = get_products_by_category(text)
+        result = get_products_by_category(text)
 
-        if products is not None:
+        if result is not None:
+
+            category, products = result
 
             if len(products) == 0:
 
@@ -137,7 +237,7 @@ async def menu(
 
             else:
 
-                message = f"🍗 {text}\n\n"
+                message = f"🍗 {category.name}\n\n"
 
                 for product in products:
 
@@ -146,7 +246,10 @@ async def menu(
                         f"💲 Precio: Bs. {product.price}\n\n"
                     )
 
-                await update.message.reply_text(message)
+                await update.message.reply_text(
+                    message,
+                    reply_markup=products_keyboard(category.id)
+                )
 
         else:
 

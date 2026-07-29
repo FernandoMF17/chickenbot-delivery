@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>🍗 Panel Administrativo</h2>
+            <p class="text-muted mb-0">
+                Bienvenido, <strong>{{ admin }}</strong>
+            </p>
+        </div>
+
+        <a href="/logout" class="btn btn-outline-danger">
+            Cerrar sesión
+        </a>
+    </div>
+
+    <div class="row mb-4">
+
+        <div class="col-md-4 mb-3">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h5>👥 Usuarios</h5>
+                    <h2>0</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h5>🍗 Productos</h5>
+                    <h2>0</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h5>📦 Pedidos</h5>
+                    <h2>0</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+            <h4 class="mb-0">
+                ⚙️ Accesos rápidos
+            </h4>
+        </div>
+
+        <div class="card-body">
+
+            <div class="d-grid gap-2">
+
+                <a href="/categories" class="btn btn-primary">
+                    📂 Gestionar Categorías
+                </a>
+
+                <a href="/products" class="btn btn-success">
+                    🍗 Gestionar Productos
+                </a>
+
+                <a href="/orders" class="btn btn-warning">
+                    📦 Gestionar Pedidos
+                </a>
+
+                <a href="/deliveries" class="btn btn-info">
+                    🚚 Gestionar Repartidores
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

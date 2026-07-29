@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-md-5 col-lg-4">
+
+        <div class="card shadow-lg border-0 mt-5">
+
+            <div class="card-header bg-dark text-white text-center py-3">
+
+                <h3 class="mb-0">
+                    <i class="bi bi-person-lock"></i>
+                    Login Administrador
+                </h3>
+
+            </div>
+
+            <div class="card-body p-4">
+
+                <form method="POST">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Usuario
+                        </label>
+
+                        <div class="input-group">
+
+                            <span class="input-group-text">
+                                <i class="bi bi-person-fill"></i>
+                            </span>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                name="username"
+                                placeholder="Ingrese su usuario"
+                                required>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mb-4">
+
+                        <label class="form-label">
+                            Contraseña
+                        </label>
+
+                        <div class="input-group">
+
+                            <span class="input-group-text">
+                                <i class="bi bi-lock-fill"></i>
+                            </span>
+
+                            <input
+                                type="password"
+                                class="form-control"
+                                name="password"
+                                placeholder="Ingrese su contraseña"
+                                required>
+
+                        </div>
+
+                    </div>
+
+                    <div class="d-grid">
+
+                        <button
+                            type="submit"
+                            class="btn btn-dark btn-lg">
+
+                            <i class="bi bi-box-arrow-in-right"></i>
+
+                            Ingresar
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+            <div class="card-footer text-center text-muted">
+
+                ChickenBot Delivery © 2026
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

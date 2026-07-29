@@ -3,8 +3,11 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from telegram.ext import MessageHandler, filters
 
-from telegram import ReplyKeyboardMarkup
-
+from telegram import (
+    ReplyKeyboardMarkup,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+)
 from app.db.session import SessionLocal
 from app.models.category import Category
 from app.models.delivery import Delivery
@@ -14,6 +17,8 @@ from app.models.user import User
 from app.models.order import Order
 from app.models.order_detail import OrderDetail
 from sqlalchemy.orm import joinedload
+
+
 
 from app.bot.keyboards import (
     main_keyboard,
@@ -72,6 +77,19 @@ def categories_keyboard():
         keyboard,
         resize_keyboard=True
     )
+
+def pending_order_keyboard(order_id: int):
+
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "🚚 Iniciar entrega",
+                callback_data=f"start_delivery:{order_id}"
+            )
+        ]
+    ]
+
+    return InlineKeyboardMarkup(keyboard)
 
 def get_products_by_category(category_name: str):
 
@@ -234,6 +252,32 @@ def update_order_location(
     finally:
         db.close()
 
+from datetime import datetime
+
+def update_order_status(
+    order_id: int,
+    status: str
+):
+
+    db = SessionLocal()
+
+    try:
+
+        order = db.get(Order, order_id)
+
+        if order is None:
+            return False
+
+        order.status = status
+        order.updated_at = datetime.utcnow()
+
+        db.commit()
+
+        return True
+
+    finally:
+        db.close()
+
 def get_pending_orders():
 
     db = SessionLocal()
@@ -320,7 +364,7 @@ async def pending_orders(
 
     for order in orders:
 
-        message += (
+        message = (
             f"🧾 Pedido #{order.id}\n"
             f"👤 Cliente: {order.user.full_name}\n"
             f"📌 Estado: {order.status}\n"
@@ -338,15 +382,11 @@ async def pending_orders(
                 f"{order.delivery_longitude}"
             )
 
-            message += (
-                f"📍 Ubicación:\n{maps}\n"
-            )
+            message += f"📍 {maps}\n"
 
         else:
 
-            message += (
-                "📍 Ubicación no registrada.\n"
-            )
+            message += "📍 Ubicación no registrada.\n"
 
         message += "\n🍗 Productos:\n"
 
@@ -356,9 +396,41 @@ async def pending_orders(
                 f"• {detail.product.name} x{detail.quantity}\n"
             )
 
-        message += "\n"
+        await update.message.reply_text(
+            message,
+            reply_markup=pending_order_keyboard(order.id)
+        )
 
-    await update.message.reply_text(message)
+async def start_delivery(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
+
+    query = update.callback_query
+
+    await query.answer()
+
+    data = query.data
+
+    order_id = int(data.split(":")[1])
+
+    success = update_order_status(
+        order_id,
+        "En camino"
+    )
+
+    if not success:
+
+        await query.edit_message_text(
+            "❌ No se pudo actualizar el pedido."
+        )
+
+        return
+
+    await query.edit_message_text(
+        f"🚚 Pedido #{order_id}\n\n"
+        "Estado actualizado a: En camino."
+    )
 
 async def menu(
     update: Update,

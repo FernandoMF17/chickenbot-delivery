@@ -1,3 +1,4 @@
+from sqlalchemy import text
 from telegram import Update
 from telegram.ext import ContextTypes
 from telegram.ext import MessageHandler, filters
@@ -12,6 +13,7 @@ from app.bot.keyboards import cart_keyboard
 from app.models.user import User
 from app.models.order import Order
 from app.models.order_detail import OrderDetail
+from sqlalchemy.orm import joinedload
 
 from app.bot.keyboards import (
     main_keyboard,
@@ -150,13 +152,50 @@ def get_or_create_user(update):
     finally:
         db.close()
 
+def get_user_orders(update):
+
+    db = SessionLocal()
+
+    try:
+
+        telegram_user = update.effective_user
+
+        username = telegram_user.username
+
+        if username is None:
+            username = f"user_{telegram_user.id}"
+
+        user = (
+            db.query(User)
+            .filter(User.username == username)
+            .first()
+        )
+
+        if user is None:
+            return []
+
+        orders = (
+            db.query(Order)
+            .options(
+                joinedload(Order.details).joinedload(OrderDetail.product)
+            )
+            .filter(Order.user_id == user.id)
+            .order_by(Order.created_at.desc())
+            .all()
+        )
+
+        return orders
+
+    finally:
+        db.close()
+
 async def menu(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
 ):
 
     text = update.message.text
-
+    print(repr(text))
     if text == "🍗 Ver categorías":
 
         await update.message.reply_text(
@@ -215,16 +254,55 @@ async def menu(
 
     elif text == "📦 Mis pedidos":
 
-        await update.message.reply_text(
-            "Todavía no tienes pedidos."
-        )
+        orders = get_user_orders(update)
+
+        if len(orders) == 0:
+
+            await update.message.reply_text(
+                "📦 Todavía no tienes pedidos."
+            )
+
+        else:
+
+            message = "📦 Historial de pedidos\n\n"
+
+            for order in orders:
+
+                fecha = order.created_at.strftime("%d/%m/%Y %H:%M")
+
+                total = sum(
+                    detail.subtotal
+                    for detail in order.details
+                )
+
+                message += (
+                    f"🧾 Pedido #{order.id}\n"
+                    f"📅 Fecha: {fecha}\n"
+                    f"📌 Estado: {order.status}\n\n"
+                )
+
+                message += "Productos:\n"
+
+                for detail in order.details:
+
+                    message += (
+                        f"• {detail.product.name} x{detail.quantity}\n"
+                    )
+
+                message += (
+                    f"\n💰 Total: Bs. {total}\n"
+                    f"{'─' * 25}\n\n"
+                )
+
+            await update.message.reply_text(message)
 
     elif text == "🗑 Vaciar carrito":
 
         context.user_data["cart"] = {}
 
         await update.message.reply_text(
-            "🗑 Carrito vaciado correctamente."
+            "🗑 Carrito vaciado correctamente.",
+            reply_markup=main_keyboard()
         )
 
 
